@@ -16,7 +16,6 @@ from cassandra.ttypes import ColumnPath, ColumnParent, \
 from lazyboy.key import Key
 from lazyboy.base import CassandraBase
 from lazyboy.record import Record
-from lazyboy.connection import Client
 
 def _iter_time(start=None, **kwargs):
     day = start or datetime.datetime.today()
@@ -52,8 +51,6 @@ class View(CassandraBase):
     def _keys(self, start_col=None, end_col=None):
         """Return keys in the view."""
         client = self._get_cas()
-        assert isinstance(client, Client), \
-            "Incorrect client instance: %s" % client.__class__
         last_col = start_col or ""
         end_col = end_col or ""
         chunk_size = self.chunk_size

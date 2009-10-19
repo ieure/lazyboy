@@ -11,7 +11,7 @@ import unittest
 import time
 
 from cassandra import Cassandra
-from cassandra.ttypes import *
+import cassandra.ttypes as ttypes
 from thrift import Thrift
 from thrift.transport import TSocket
 
@@ -20,37 +20,29 @@ from lazyboy.exceptions import *
 from test_record import MockClient
 
 
-class ConnectionTest(unittest.TestCase):
+class ConnectionTest(object):
     def setUp(self):
         self.pool = 'testing'
-        self.__client = conn.Client
+        self.__client = conn.RoundRobinClient
         conn.Client = MockClient
-        conn._CLIENTS = {}
-        conn._SERVERS = {self.pool: ['localhost:1234']}
 
     def tearDown(self):
         conn.Client = self.__client
 
 
-class TestPools(ConnectionTest):
-    def test_add_pool(self):
+class TestPools(unittest.TestCase, ConnectionTest):
+    def test_init(self):
         servers = ['localhost:1234', 'localhost:5678']
-        conn.add_pool(__name__, servers)
-        self.assert_(conn._SERVERS[__name__] == servers)
+        get_client = conn.init({__name__: servers})
+        self.assert_(callable(get_client))
 
-    def test_get_pool(self):
-        client = conn.get_pool(self.pool)
-        self.assert_(type(client) is conn.Client)
-
-        self.assertRaises(TypeError, conn.Client)
-
-        self.assertRaises(ErrorCassandraClientNotFound,
-                          conn.get_pool, (__name__))
+    def test_get_client(self):
+        pass
 
 
-class TestClient(ConnectionTest):
+class TestRoundRobinClient(unittest.TestCase, ConnectionTest):
     def setUp(self):
-        super(TestClient, self).setUp()
+        super(TestRoundRobinClient, self).setUp()
         self.client = MockClient(['localhost:1234', 'localhost:5678'])
 
     def test_init(self):

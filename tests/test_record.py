@@ -13,7 +13,7 @@ import unittest
 
 from cassandra.ttypes import Column, ColumnOrSuperColumn, ColumnParent
 
-from lazyboy.connection import Client
+from lazyboy.connection import RoundRobinClient
 from lazyboy.key import Key
 from lazyboy.record import Record
 from lazyboy.exceptions import ErrorMissingField, ErrorMissingKey, \
@@ -24,7 +24,7 @@ from test_base import CassandraBaseTest
 
 _last_cols = []
 _inserts = []
-class MockClient(Client):
+class MockClient(RoundRobinClient):
     """A mock Cassandra client which returns canned responses"""
     def get_slice(self, *args, **kwargs):
         [_last_cols.pop() for i in range(len(_last_cols))]
